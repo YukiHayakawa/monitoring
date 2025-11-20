@@ -37,6 +37,10 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_SECURITY_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_SECURITY_ADMIN_PASSWORD}
+      - PROMETHEUS_NAME=${PROMETHEUS_NAME}
+      - PROMETHEUS_INTERNAL_PORT=${PROMETHEUS_INTERNAL_PORT}
+      - LOKI_NAME=${LOKI_NAME}
+      - LOKI_INTERNAL_PORT=${LOKI_INTERNAL_PORT}
 
     volumes:
       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
