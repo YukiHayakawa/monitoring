@@ -44,6 +44,40 @@ services:
     networks:
       - proxy-net
 
+  # node-exporter:
+  #   image: prom/node-exporter:latest
+  #   container_name: ${NODE_EXPORTER_NAME}
+  #   restart: unless-stopped
+  #   command:
+  #     - '--path.sysfs=/host/sys'
+  #     - '--path.procfs=/host/proc'
+  #     - '--path.rootfs=/host/root'
+  #     - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)'
+  #   expose:
+  #     - "${NODE_EXPORTER_PORT}"
+  #   volumes:
+  #     - /proc:/host/proc:ro
+  #     - /sys:/host/sys:ro
+  #     - /:/host/root:ro
+  #   networks:
+  #     - proxy-net
+
+  # cadvisor:
+  #   image: gcr.io/cadvisor/cadvisor:v0.47.2
+  #   container_name: ${CADVISOR_NAME}
+  #   restart: unless-stopped
+  #   privileged: true
+  #   expose:
+  #     - "${CADVISOR_PORT}"
+  #   volumes:
+  #     - /:/rootfs:ro
+  #     - /var/run:/var/run:ro
+  #     - /sys:/sys:ro
+  #     - /var/lib/docker/:/var/lib/docker:ro
+  #     - /dev/disk/:/dev/disk:ro
+  #   networks:
+  #     - proxy-net
+
   edge:
     image: nginx:alpine
     container_name: ${EDGE_HOST}
@@ -56,6 +90,8 @@ services:
 
     environment:
       VIRTUAL_HOST: ${GRAFANA_HOST},${PROMETHEUS_HOST},${LOKI_HOST}
+      LETSENCRYPT_HOST: ${GRAFANA_HOST},${PROMETHEUS_HOST},${LOKI_HOST}
+      LETSENCRYPT_EMAIL: ${EMAIL}
       GRAFANA_NAME: ${GRAFANA_NAME}
       GRAFANA_HOST: ${GRAFANA_HOST}
       GRAFANA_INTERNAL_PORT: ${GRAFANA_INTERNAL_PORT}
