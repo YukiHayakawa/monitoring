@@ -1,0 +1,10 @@
+server {
+  listen 80;
+  server_name ${GRAFANA_HOST};
+
+  location / {
+    proxy_pass http://${GRAFANA_NAME}:${GRAFANA_INTERNAL_PORT};
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+  }
+}

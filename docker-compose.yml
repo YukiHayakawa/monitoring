@@ -1,0 +1,82 @@
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ${PROMETHEUS_HOST}
+    hostname: ${PROMETHEUS_NAME}
+    restart: unless-stopped
+    ports:
+      - ${PROMETHEUS_INTERNAL_PORT}
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+    networks:
+      - proxy-net
+
+  loki:
+    image: grafana/loki:2.9.6
+    container_name: ${LOKI_HOST}
+    hostname: ${LOKI_NAME}
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - ${LOKI_INTERNAL_PORT}
+    volumes:
+      - ./loki/local-config.yml:/etc/loki/local-config.yml:ro
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      - proxy-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ${GRAFANA_HOST}
+    hostname: ${GRAFANA_NAME}
+    restart: unless-stopped
+    ports:
+      - ${GRAFANA_INTERNAL_PORT}
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_SECURITY_ADMIN_PASSWORD}
+
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/data:/var/lib/grafana
+    networks:
+      - proxy-net
+
+  edge:
+    image: nginx:alpine
+    container_name: ${EDGE_HOST}
+    hostname: ${EDGE_NAME}
+    restart: unless-stopped
+
+    volumes:
+      - ./edge/nginx/conf.d:/etc/nginx/conf.d
+      - ./edge/nginx/templates:/etc/nginx/templates:ro
+
+    environment:
+      VIRTUAL_HOST: ${GRAFANA_HOST},${PROMETHEUS_HOST},${LOKI_HOST}
+      GRAFANA_NAME: ${GRAFANA_NAME}
+      GRAFANA_HOST: ${GRAFANA_HOST}
+      GRAFANA_INTERNAL_PORT: ${GRAFANA_INTERNAL_PORT}
+      PROMETHEUS_NAME: ${PROMETHEUS_NAME}
+      PROMETHEUS_HOST: ${PROMETHEUS_HOST}
+      PROMETHEUS_INTERNAL_PORT: ${PROMETHEUS_INTERNAL_PORT}
+      LOKI_NAME: ${LOKI_NAME}
+      LOKI_HOST: ${LOKI_HOST}
+      LOKI_INTERNAL_PORT: ${LOKI_INTERNAL_PORT}
+
+    depends_on:
+      - grafana
+      - prometheus
+      - loki
+
+    expose:
+      - ${EDGE_PORT}
+    networks:
+      - proxy-net
+
+networks:
+  proxy-net:
+    external: true
+    name: proxy-net

@@ -1,0 +1,7 @@
+.env
+.vscode
+.DS_Store
+
+data
+conf.d/
+prometheus.yml
