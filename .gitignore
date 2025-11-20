@@ -3,5 +3,8 @@
 .DS_Store
 
 data
+!grafana/data/
+grafana/data/*
+!grafana/data/.gitkeep
 conf.d/
 prometheus.yml
