@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
     command: -config.file=/etc/loki/local-config.yaml
     ports:
-      - ${LOKI_INTERNAL_PORT}
+      - ${LOKI_PORT}:${LOKI_INTERNAL_PORT}
     volumes:
       - ./loki/local-config.yml:/etc/loki/local-config.yml:ro
       - /etc/timezone:/etc/timezone:ro
