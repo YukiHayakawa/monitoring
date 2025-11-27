@@ -9,6 +9,7 @@ services:
       - ${PROMETHEUS_INTERNAL_PORT}
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/data:/prometheus
 
     networks:
       - proxy-net
@@ -23,6 +24,7 @@ services:
       - ${LOKI_PORT}:${LOKI_INTERNAL_PORT}
     volumes:
       - ./loki/local-config.yml:/etc/loki/local-config.yml:ro
+      - ./loki/data:/loki
       - /etc/timezone:/etc/timezone:ro
     networks:
       - proxy-net

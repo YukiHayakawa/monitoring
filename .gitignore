@@ -6,5 +6,11 @@ data
 !grafana/data/
 grafana/data/*
 !grafana/data/.gitkeep
+!prometheus/data/
+prometheus/data/*
+!prometheus/data/.gitkeep
+!loki/data/
+loki/data/*
+!loki/data/.gitkeep
 conf.d/
 prometheus.yml
