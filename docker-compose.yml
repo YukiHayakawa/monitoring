@@ -48,39 +48,39 @@ services:
     networks:
       - proxy-net
 
-  # node-exporter:
-  #   image: prom/node-exporter:latest
-  #   container_name: ${NODE_EXPORTER_NAME}
-  #   restart: unless-stopped
-  #   command:
-  #     - '--path.sysfs=/host/sys'
-  #     - '--path.procfs=/host/proc'
-  #     - '--path.rootfs=/host/root'
-  #     - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)'
-  #   expose:
-  #     - "${NODE_EXPORTER_PORT}"
-  #   volumes:
-  #     - /proc:/host/proc:ro
-  #     - /sys:/host/sys:ro
-  #     - /:/host/root:ro
-  #   networks:
-  #     - proxy-net
 
-  # cadvisor:
-  #   image: gcr.io/cadvisor/cadvisor:v0.47.2
-  #   container_name: ${CADVISOR_NAME}
-  #   restart: unless-stopped
-  #   privileged: true
-  #   expose:
-  #     - "${CADVISOR_PORT}"
-  #   volumes:
-  #     - /:/rootfs:ro
-  #     - /var/run:/var/run:ro
-  #     - /sys:/sys:ro
-  #     - /var/lib/docker/:/var/lib/docker:ro
-  #     - /dev/disk/:/dev/disk:ro
-  #   networks:
-  #     - proxy-net
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: ${NODE_EXPORTER_NAME}
+    restart: unless-stopped
+
+    # ホストのネットワーク名前空間をそのまま使う
+    # network_mode: "host"
+    pid: "host"
+
+    volumes:
+      # ホストのルートFSを /host としてマウント
+      - /:/host:ro
+    ports:
+      - "${NODE_EXPORTER_PORT}:9100"
+    command:
+      # ホスト側の / を見るように指定
+      - '--path.rootfs=/host'
+
+  cadvisor:
+    image: ghcr.io/google/cadvisor:v0.53.0
+    container_name: ${CADVISOR_NAME}
+    restart: unless-stopped
+    ports:
+      - ${CADVISOR_PORT}:8080
+    volumes:
+      - /:/rootfs:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - proxy-net
+
 
   edge:
     image: nginx:alpine

@@ -4,12 +4,14 @@ Prometheus、Loki、Grafana をセットにした監視スタックです。`edg
 
 ## 構成
 
-| サービス    | 役割                                          | Exposed ポート                | 備考                                                 |
-| ----------- | --------------------------------------------- | ----------------------------- | ---------------------------------------------------- |
-| Prometheus  | メトリクス収集（node-exporter / cAdvisor 等） | `${PROMETHEUS_INTERNAL_PORT}` | `prometheus/prometheus.local.yml` をベースにカスタム |
-| Loki        | ログ集約（promtail などから Push）            | `${LOKI_INTERNAL_PORT}`       | `loki/local-config.yml`                              |
-| Grafana     | ダッシュボード可視化                          | `${GRAFANA_INTERNAL_PORT}`    | `grafana/provisioning/**` で自動プロビジョニング     |
-| Edge(Nginx) | HTTPS 終端／リバースプロキシ                  | `${EDGE_PORT}` (expose のみ)  | jwilder/nginx-proxy と同じ `proxy-net` に接続        |
+| サービス       | 役割                                          | Exposed ポート                | 備考                                                 |
+| -------------- | --------------------------------------------- | ----------------------------- | ---------------------------------------------------- |
+| Prometheus     | メトリクス収集（node-exporter / cAdvisor 等） | `${PROMETHEUS_INTERNAL_PORT}` | `prometheus/prometheus.yml` をベースにカスタム       |
+| Loki           | ログ集約（promtail などから Push）            | `${LOKI_INTERNAL_PORT}`       | `loki/local-config.yml`                              |
+| Grafana        | ダッシュボード可視化                          | `${GRAFANA_INTERNAL_PORT}`    | `grafana/provisioning/**` で自動プロビジョニング     |
+| Node Exporter  | Docker ホストの OS メトリクス収集             | `${NODE_EXPORTER_PORT}`       | `/proc` / `/sys` をマウントしてホスト情報を収集      |
+| cAdvisor       | Docker ホスト上のコンテナメトリクス収集       | `${CADVISOR_PORT}`            | Docker デーモンの統計を公開                          |
+| Edge(Nginx)    | HTTPS 終端／リバースプロキシ                  | `${EDGE_PORT}` (expose のみ)  | jwilder/nginx-proxy と同じ `proxy-net` に接続        |
 
 ## 必要条件
 
@@ -39,10 +41,11 @@ Prometheus、Loki、Grafana をセットにした監視スタックです。`edg
    | `PROMETHEUS_HOST` / `LOKI_HOST` / `GRAFANA_HOST` / `EDGE_HOST` | 実際に jwilder/nginx-proxy に渡す完全修飾ホスト名                         |
    | `PROMETHEUS_INTERNAL_PORT` ほか                                | 各サービスのコンテナ内ポート。基本的にはデフォルトのままで OK             |
    | `GF_SECURITY_ADMIN_*`                                          | Grafana 初期ログイン情報                                                  |
+   | `NODE_EXPORTER_*` / `CADVISOR_*`                               | ホストメトリクス用サービスのコンテナ名・ポート                            |
 
 3. **Prometheus のスクレイプ設定**
 
-   - `prometheus/prometheus.sample.yml` を参考に、 `prometheus/prometheus.yml` を作成して 必要な job を記載する
+   - `prometheus/prometheus.yml` にはデフォルトで `prometheus` / `node-exporter` / `cadvisor` / `nginx-logs` のジョブが定義されています。Docker ホスト以外のメトリクスが必要な場合はここにジョブを追加してください。
 
 4. **Loki・Grafana の設定**
 
@@ -81,7 +84,7 @@ Prometheus、Loki、Grafana をセットにした監視スタックです。`edg
 
 4. **監視対象を増やす**
 
-   - `prometheus/prometheus.yml` 内にジョブを追加します。
+   - `prometheus/prometheus.yml` 内にジョブを追加します。ホストメトリクス用の `node-exporter` / `cadvisor` は Compose に同梱されているため、Docker ホスト自身は追加作業なしで取得できます。
    - promtail から Loki へ送る場合は各アプリサーバーに promtail を配置し、`clients[].url` に `http(s)://<EDGE_HOST>/loki/api/v1/push` を指定してください。
 
 5. **停止 / クリーンアップ**
