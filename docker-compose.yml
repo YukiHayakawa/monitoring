@@ -19,7 +19,7 @@ services:
     container_name: ${LOKI_HOST}
     hostname: ${LOKI_NAME}
     restart: unless-stopped
-    command: -config.file=/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yml
     ports:
       - ${LOKI_PORT}:${LOKI_INTERNAL_PORT}
     volumes:
