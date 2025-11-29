@@ -3,7 +3,7 @@ server {
   server_name ${PROMETHEUS_HOST};
 
   location / {
-    proxy_pass http://${PROMETHEUS_NAME}:${PROMETHEUS_INTERNAL_PORT};
+    proxy_pass http://${PROMETHEUS_HOST}:${PROMETHEUS_INTERNAL_PORT};
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
   }
