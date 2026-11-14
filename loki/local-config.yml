@@ -37,16 +37,19 @@ storage_config:
 compactor:
   working_directory: /loki/boltdb-shipper-compactor
   shared_store: filesystem
+  # filesystem では table_manager の retention ではチャンクが消えないため、compactor で削除する
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150
 
 limits_config:
   ingestion_rate_mb: 10
   ingestion_burst_size_mb: 20
   max_global_streams_per_user: 5000
   max_query_series: 100000
+  # -config.expand-env=true で .env の LOKI_RETENTION_HOURS を展開する
+  retention_period: ${LOKI_RETENTION_HOURS:-168}h
 
 chunk_store_config:
   max_look_back_period: 0s
-
-table_manager:
-  retention_deletes_enabled: true
-  retention_period: 168h
