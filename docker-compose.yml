@@ -5,6 +5,11 @@ services:
     container_name: ${PROMETHEUS_HOST}
     hostname: ${PROMETHEUS_NAME}
     restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-15d}'
+      - '--storage.tsdb.retention.size=${PROMETHEUS_RETENTION_SIZE:-10GB}'
     ports:
       - ${PROMETHEUS_INTERNAL_PORT}
     volumes:
@@ -19,7 +24,11 @@ services:
     container_name: ${LOKI_HOST}
     hostname: ${LOKI_NAME}
     restart: unless-stopped
-    command: -config.file=/etc/loki/local-config.yml
+    command:
+      - '-config.file=/etc/loki/local-config.yml'
+      - '-config.expand-env=true'
+    environment:
+      - LOKI_RETENTION_HOURS=${LOKI_RETENTION_HOURS:-168}
     ports:
       - ${LOKI_PORT}:${LOKI_INTERNAL_PORT}
     volumes:
